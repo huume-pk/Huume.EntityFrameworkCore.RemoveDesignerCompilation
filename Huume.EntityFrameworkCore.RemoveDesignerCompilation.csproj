@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>true</IsPackable>
-    <Version>1.0.0</Version>
+    <Version>1.0.2</Version>
     <Title>Huume.EntityFrameworkCore.RemoveDesignerCompilation</Title>
     <Authors>Huume</Authors>
     <Description>Makes sure that only the last N .Designer.cs files from Entity Framework Core Migrations are compiled.</Description>
@@ -25,6 +25,7 @@
 	  <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
 	  <!-- NuGet does validation that libraries in a package are exposed as dependencies, but we _explicitly_ do not want that behavior for MSBuild tasks. They are isolated by design. Therefore we ignore this specific warning. -->
 	  <NoWarn>NU5100</NoWarn>    
+	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>    
   </PropertyGroup>
 
   <ItemGroup>

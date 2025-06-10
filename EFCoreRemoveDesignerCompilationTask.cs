@@ -42,9 +42,9 @@ namespace Huume.EntityFrameworkCore.RemoveDesignerCompilation
                 Log.LogMessage(MessageImportance.High, $"EF Core migration kept file {file}");
             }
 
-            ExcludeDesignerFiles = excludeFiles.ToArray();
+            ExcludeDesignerFiles = excludeFiles.OrderBy(x => x).ToArray();
 
-            LatestDesignerFiles = keptFiles.ToArray();
+            LatestDesignerFiles = keptFiles.OrderBy(x => x).ToArray();
 
             Log.LogMessage(MessageImportance.High, $"RDC: Done");
             return !Log.HasLoggedErrors;

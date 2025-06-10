@@ -8,8 +8,9 @@
       <RDC_MigrationFilesPath Condition="'$(RDC_MigrationFilesPath)' == ''">$(ProjectDir)\Migrations</RDC_MigrationFilesPath>
       <RDC_DesignerFileCountToKeep Condition="'$(RDC_DesignerFileCountToKeep)' == ''">2</RDC_DesignerFileCountToKeep>
     </PropertyGroup>
-    <EFCoreRemoveDesignerCompilationTask DBContextNamespace="$(RDC_DBContextNamespace)" MigrationFilesPath="$(RDC_MigrationFilesPath)" DesignerFileCountToKeep="$(RDC_DesignerFileCountToKeep)">
+    <EFCoreRemoveDesignerCompilationTask DBContextNamespace="$(RDC_DBContextNamespace)" MigrationFilesPath="$(RDC_MigrationFilesPath)" DesignerFileCountToKeep="$(RDC_DesignerFileCountToKeep)" IgnoreFilename="$(RDC_IgnoreFilename)">
       <Output TaskParameter="LatestDesignerFiles" ItemName="RDC_LatestDesignerFiles" />
+      <Output TaskParameter="ExcludeDesignerFiles" ItemName="RDC_ExcludeDesignerFiles" />
     </EFCoreRemoveDesignerCompilationTask>
     <ItemGroup>
       <Compile Include="@(RDC_LatestDesignerFiles)" />

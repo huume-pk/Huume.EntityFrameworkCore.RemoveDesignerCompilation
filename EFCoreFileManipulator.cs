@@ -33,14 +33,14 @@ namespace Huume.EntityFrameworkCore.RemoveDesignerCompilation
             {
                 if (!string.IsNullOrEmpty(ignoreFilename) && file.Name.Contains(ignoreFilename))
                 {
-                    keptFiles.Add(file.Name);
+                    keptFiles.Add(file.FullName);
                     continue;
                 }
                 
                 if (designerFileCountToKeep > 0 && keepCount < designerFileCountToKeep)
                 {
                     keepCount++;
-                    keptFiles.Add(file.Name);
+                    keptFiles.Add(file.FullName);
                     continue;
                 }
 
