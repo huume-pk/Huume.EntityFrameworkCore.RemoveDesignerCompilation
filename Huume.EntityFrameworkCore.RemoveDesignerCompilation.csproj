@@ -3,16 +3,16 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>true</IsPackable>
-    <Version>0.1.0-alpha6</Version>
-    <Title>MSBuild.EntityFrameworkCore.RemoveDesignerCompilation</Title>
-    <Authors>GitHub Collaborators</Authors>
+    <Version>1.0.0</Version>
+    <Title>Huume.EntityFrameworkCore.RemoveDesignerCompilation</Title>
+    <Authors>Huume</Authors>
     <Description>Makes sure that only the last N .Designer.cs files from Entity Framework Core Migrations are compiled.</Description>
     <PackageTags>MSBuild EntityFrameworkCore Designer Compilation</PackageTags>
-    <Copyright>Copyright © GitHub Collaborators</Copyright>
+    <Copyright>Copyright © Huume</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageProjectUrl>https://github.com/MichelZ/MSBuild.EntityFrameworkCore.RemoveDesignerCompilation</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/MichelZ/MSBuild.EntityFrameworkCore.RemoveDesignerCompilation</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/huume-pk/Huume.EntityFrameworkCore.RemoveDesignerCompilation</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/huume-pk/Huume.EntityFrameworkCore.RemoveDesignerCompilation</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageIcon>icon.png</PackageIcon>
 
@@ -41,8 +41,8 @@
     <!-- these lines pack the build props/targets files to the `build` folder in the generated package.
  		by convention, the .NET SDK will look for build\<Package Id>.props and build\<Package Id>.targets
  		for automatic inclusion in the build. -->
-    <Content Include="build\MSBuild.EntityFrameworkCore.RemoveDesignerCompilation.props" PackagePath="build\" />
-    <Content Include="build\MSBuild.EntityFrameworkCore.RemoveDesignerCompilation.targets" PackagePath="build\" />
+    <Content Include="build\Huume.EntityFrameworkCore.RemoveDesignerCompilation.props" PackagePath="build\" />
+    <Content Include="build\Huume.EntityFrameworkCore.RemoveDesignerCompilation.targets" PackagePath="build\" />
   </ItemGroup>
 
   <!-- This is the target we defined above. It's purpose is to add all of our PackageReference and ProjectReference's runtime assets to our package output.  -->

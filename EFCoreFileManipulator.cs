@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace MSBuild.EntityFrameworkCore.RemoveDesignerCompilation
+namespace Huume.EntityFrameworkCore.RemoveDesignerCompilation
 {
     internal class EFCoreFileManipulator
     {
@@ -21,26 +21,49 @@ namespace MSBuild.EntityFrameworkCore.RemoveDesignerCompilation
             _taskLoggingHelper = taskLoggingHelper;
         }
 
-        public void ProcessDirectory(DirectoryInfo directory, string namespaceName)
+        public (List<string> excludedFiles, List<string> keptFiles) ProcessDirectory(DirectoryInfo directory, string namespaceName, int designerFileCountToKeep, string ignoreFilename)
         {
+            var excludeFiles = new List<string>();
+            var keptFiles = new List<string>();
+
             var filesToProcess = new List<(FileInfo MigrationFile, FileInfo DesignerFile)>();
-            foreach (var file in directory.EnumerateFiles("*.Designer.cs").OrderBy(x => x.Name))
+            var keepCount = 0;
+
+            foreach (var file in directory.EnumerateFiles("*.Designer.cs").OrderByDescending(x => x.Name))
             {
+                if (!string.IsNullOrEmpty(ignoreFilename) && file.Name.Contains(ignoreFilename))
+                {
+                    keptFiles.Add(file.Name);
+                    continue;
+                }
+                
+                if (designerFileCountToKeep > 0 && keepCount < designerFileCountToKeep)
+                {
+                    keepCount++;
+                    keptFiles.Add(file.Name);
+                    continue;
+                }
+
                 filesToProcess.Add((new FileInfo(file.FullName.Replace(".Designer.cs", ".cs")), file));
             }
 
-            foreach (var (migrationFile, designerFile) in filesToProcess)
+            foreach (var (migrationFile, designerFile) in filesToProcess.OrderBy(x => x.MigrationFile.Name))
             {
                 if (!designerFile.Exists || !migrationFile.Exists)
                 {
                     _taskLoggingHelper.LogMessage(MessageImportance.High, $"RDC: File {migrationFile} or {designerFile} does not exist.");
                 }
 
-                ProcessFiles(migrationFile, designerFile, namespaceName);
+                if (ProcessFiles(migrationFile, designerFile, namespaceName))
+                {
+                    excludeFiles.Add(designerFile.FullName);
+                }
             }
+
+            return (excludeFiles, keptFiles);
         }
 
-        private void ProcessFiles(FileInfo migrationFile, FileInfo designerFile, string namespaceName)
+        private bool ProcessFiles(FileInfo migrationFile, FileInfo designerFile, string namespaceName)
         {
             var designerFileContent = File.ReadAllText(designerFile.FullName);
             var codeFileContent = File.ReadAllText(migrationFile.FullName);
@@ -52,7 +75,7 @@ namespace MSBuild.EntityFrameworkCore.RemoveDesignerCompilation
                 || !MigrationRegex.IsMatch(designerFileContent))
             {
                 _taskLoggingHelper.LogMessage(MessageImportance.High, $"RDC: File {designerFile} is not a migration that we need to process (it was probably already processed).");
-                return;
+                return true;
             }
 
             if (codeFileContent.Contains("[Migration(")
@@ -61,7 +84,7 @@ namespace MSBuild.EntityFrameworkCore.RemoveDesignerCompilation
                 || MigrationRegex.IsMatch(codeFileContent))
             {
                 _taskLoggingHelper.LogMessage(MessageImportance.High, $"RDC: File {migrationFile} already has the necessary attributes. (it was probably already processed).");
-                return;
+                return true;
             }
 
             var migrationMatchValue = MigrationRegex.Match(designerFileContent).Value;
@@ -73,12 +96,12 @@ namespace MSBuild.EntityFrameworkCore.RemoveDesignerCompilation
             if (indexOfPartialClass == -1)
             {
                 _taskLoggingHelper.LogWarning("RDC: Could not find public partial class declaration. Ignoring file");
-                return;
+                return false;
             }
 
             var lastNewline = codeFileContent.LastIndexOf('\n', indexOfPartialClass, indexOfPartialClass);
-            codeFileContent = codeFileContent.Insert(lastNewline+1, migrationMatchValue);
-            codeFileContent = codeFileContent.Insert(lastNewline+1, dbContextMatchValue);
+            codeFileContent = codeFileContent.Insert(lastNewline + 1, migrationMatchValue);
+            codeFileContent = codeFileContent.Insert(lastNewline + 1, dbContextMatchValue);
 
             designerFileContent = designerFileContent.Replace(dbContextMatchValue, string.Empty);
             designerFileContent = designerFileContent.Replace(migrationMatchValue, string.Empty);
@@ -87,6 +110,8 @@ namespace MSBuild.EntityFrameworkCore.RemoveDesignerCompilation
 
             File.WriteAllText(designerFile.FullName, designerFileContent);
             File.WriteAllText(migrationFile.FullName, codeFileContent);
+
+            return true;
         }
 
         private string AddUsingIfNecessary(string codeContent, string namespaceName, string lineEndingStyle)

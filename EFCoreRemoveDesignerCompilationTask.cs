@@ -4,31 +4,47 @@ using Microsoft.Build.Framework;
 using Task = Microsoft.Build.Utilities.Task;
 
 
-namespace MSBuild.EntityFrameworkCore.RemoveDesignerCompilation
+namespace Huume.EntityFrameworkCore.RemoveDesignerCompilation
 {
     public class EFCoreRemoveDesignerCompilationTask : Task
     {
         [Required]
         public string MigrationFilesPath { get; set; }
-        [Required]
+
+        [Required]        
         public string DBContextNamespace { get; set; }
+
         public int DesignerFileCountToKeep { get; set; } = 2;
+
+        public string IgnoreFilename { get; set; }
+
         [Output]
         public string[] LatestDesignerFiles { get; set; }
+
+        [Output]
+        public string[] ExcludeDesignerFiles { get; set; }
 
         public override bool Execute()
         {
             var efCoreFileManipulator = new EFCoreFileManipulator(Log);
             var directory = new DirectoryInfo(MigrationFilesPath);
-            efCoreFileManipulator.ProcessDirectory(directory, DBContextNamespace);
 
-            var latestFiles = directory.EnumerateFiles("*.Designer.cs").OrderByDescending(x => x.Name).Take(DesignerFileCountToKeep);
-            LatestDesignerFiles = latestFiles.Select(x => x.FullName).ToArray();
+            var (excludeFiles, keptFiles) = efCoreFileManipulator.ProcessDirectory(directory, DBContextNamespace, DesignerFileCountToKeep, IgnoreFilename);
 
-            foreach (var file in latestFiles)
+            foreach (var file in excludeFiles)
             {
-                Log.LogMessage(MessageImportance.High, $"RDC: Keeping file {file}");
+                Log.LogMessage(MessageImportance.High, $"EF Core migration excluding file {file}");
             }
+
+            
+            foreach (var file in keptFiles)
+            {
+                Log.LogMessage(MessageImportance.High, $"EF Core migration kept file {file}");
+            }
+
+            ExcludeDesignerFiles = excludeFiles.ToArray();
+
+            LatestDesignerFiles = keptFiles.ToArray();
 
             Log.LogMessage(MessageImportance.High, $"RDC: Done");
             return !Log.HasLoggedErrors;
